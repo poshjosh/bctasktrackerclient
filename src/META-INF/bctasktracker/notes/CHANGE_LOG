@@ -1,0 +1,85 @@
+PendingUpdatesManager uses LinkedList not Queue
+Changed /doctrackerbasic/slave_updates to /doctrackerbasic/pending_updates
+Changed 
+both updateTypes.pending and entities.pending 
+To single file
+pendingSlaveUpdates.list
+
+Changed
+reportsOutputDir=${user.home}/doctrackerbasic/output
+To
+reportsOutputDir=${user.home}/bctasktracker/output
+
+Changed FileNames.doctrackerbasic to FileNames.bctasktracker
+
+Changed
+java.util.logging.FileHandler.pattern = %h/doctrackerbasic/logs/%u.log
+to
+java.util.logging.FileHandler.pattern = %h/bctasktracker/logs/%u.log
+
+Transfered all such from tasktracker to naftasktracker
+report.0.name=feedback
+report.0.keywords=brief\ ,\ RPB\ ,report\ back,feedback,feed\ back
+
+Transfered logic of method updateReports() to naftasktracker
+
+Removed outdated logic for importing excel data
+-----------------------------------------------
+-Removed all classes in package com.bc.tasktracker.excel 
+-Removed .ui.actions.ImportDocsFromExcelData and .ui.actions.ImportExcelData
+-Removed from TasktrackerActionCommands field String IMPORT_DOCS_FROM_EXCEL = ImportDocsFromExcelData.class.getName();
+   
+Moved com.pdm.ui.actions.ImportSheetData to com.bc.appbase.ui.actions  
+
+Transfered from tasktracker to naftasktracker 
+---------------------------------------------
+- META-INF/app_devmode.properties, META-INF/bctasktracker/logging_devmode.properties
+- naflog.jpg
+- Main class
+
+-----------------------------------
+-------------- TO DO --------------
+-----------------------------------
+There should be non-modifiable properties
+app.label= 
+app.name= 
+app.dir=${user.home}/${app.name}
+
+FileNames and FileNamesWeb should be properties -> replace all static occurences with the properties 
+
+Remove authorComboBox from TaskResponsePanel
+Remove jpa_jdbc_properties from webapps
+--Find out why username gotten from appointment uses abbreviation, decide on if its 
+best then ensure this standard remains consistent accross desktop/web etc platforms
+--E.g override UserImpl to check the username supplied against appointments and
+convert to appropriate format before sending to authentication server
+
+Set enableSync to TRUE, connect to remote and test trackstart, querytoday
+
+Move web related folders from doctrackerbasicweb to dhqtasktrackerweb
+Remember to parse insert.sql
+Use AppCore not WebApp
+Use User from AppCore not from WebApp
+Search servlet in WebApp needs working on ResultModel = null
+
+app.getName() exists
+
+---------------------------
+
+Add install, un-install capability
+create required dirs
+create required files in the dirs
+
+Reports - View Report has opinionated options
+Add MenuItem Reports - Add Report
+Test lookAndFeel.actions
+
+Settings
+
+FormEntryComponentModel should extend ComponentModel
+DisplaySettingsUI
+
+Encrypt passwords being saved and deserialized by PropertiesManagerImpl
+
+
+

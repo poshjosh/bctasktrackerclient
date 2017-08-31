@@ -1,0 +1,46 @@
+http://docs.oracle.com/javadb/10.10.1.2/getstart/index.html
+-----------------------------------------------------------
+...
+
+http://docs.oracle.com/javadb/10.10.1.2/getstart/rgsquck35368.html
+------------------------------------------------------------------
+Different JDBC drivers are available depending on the environment you choose for Derby.
+
+org.apache.derby.jdbc.EmbeddedDriver
+A driver for embedded environments, when Derby runs in the same JVM as the application.
+
+org.apache.derby.jdbc.ClientDriver
+A driver for the Network Server environment. The Network Server sets up a client/server environment.
+
+http://docs.oracle.com/javadb/10.10.1.2/getstart/rgsquck30197.html
+------------------------------------------------------------------
+You must use a database connection URL when using the Derby-provided embedded driver to connect to a database.
+
+The format for the database connection URL for connecting to a database is:
+jdbc:derby:databaseName;URLAttributes
+where:
+databaseName
+The name of the database that you want to connect to
+
+URLAttributes
+One or more of the supported attributes of the database connection URL, such as ;territory=ll_CC or ;create=true.
+
+For more information, see the Java DB Developer's Guide.
+
+For the network client driver that is provided by Derby, the format for the database connection URL for connecting to a database is this:
+jdbc:derby://server[:port]/databaseName[;URLAttributes=value[;...]]
+where the server and port specify the host name (or IP address) and port number where the server is listening for requests and databaseName is the name of the database you want to connect to. The URLAttributes can be either Derby embedded or network client attributes. See the Java DB Server and Administration Guide for more information on accessing the Network Server by using the network client.
+
+Creating system wide users
+You can set persistent system-wide properties in a text file called derby.properties, 
+which must be placed in the directory specified by the derby.system.home property. 
+There should be one derby.properties file per system, not per database. The file must 
+be created in the system directory. In a client/server environment, that directory is 
+on the server. (For more information about a Derby system and the system directory, 
+see "Derby System" in the Derby Developer's Guide.)
+
+Example properties entries for javadb users
+# Users definition
+#
+derby.user.sa=derbypass
+derby.user.mary=little7xylamb
