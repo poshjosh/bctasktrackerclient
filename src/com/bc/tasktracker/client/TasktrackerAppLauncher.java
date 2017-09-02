@@ -49,8 +49,7 @@ public class TasktrackerAppLauncher extends AppLauncher<TasktrackerApp> {
 
     public TasktrackerAppLauncher() {
         this.sqlInsertResources = Collections.EMPTY_SET;
-        this.entityType(Task.class)
-                .processLog("HQ NAF TASK TRACKER");
+        this.entityType(Task.class).processLogUIForTitle("HQ NAF TASK TRACKER");
     }
     
     public TasktrackerAppLauncher sqlInsertResources(Set<String> resources) {
