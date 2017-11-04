@@ -62,8 +62,4 @@ public interface TasktrackerActionCommands
     String EXECUTE_SELECT_QUERY = com.bc.appbase.ui.actions.ExecuteSelectQuery.class.getName();
     String EXECUTE_UPDATE_QUERY = ExecuteUpdateQuery.class.getName();
     String EXECUTE_DELETE_QUERY = ExecuteDeleteQuery.class.getName();
-    
-    String SEARCH_DEADLINE_TASKS = SearchDeadlineTasks.class.getName();
-    
-    String SCHEDULE_DEADLINE_TASKS_REMINDER = ScheduleDeadlineTasksReminder.class.getName();
 }

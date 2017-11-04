@@ -29,6 +29,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import com.bc.tasktracker.client.ui.actions.TasktrackerActionCommands;
 import com.bc.tasktracker.client.TasktrackerApp;
+import com.bc.tasktracker.client.functions.SetSelectedAppointment;
+import javax.swing.ComboBoxModel;
 
 /**
  * @author Josh
@@ -54,6 +56,7 @@ public class TaskPanel extends javax.swing.JPanel {
 
         final String [] values = app.getAppointmentNames();
         
+        this.getAuthorCombobox().setModel(new DefaultComboBoxModel<>(values));
         this.getResponsiblityCombobox().setModel(new DefaultComboBoxModel<>(values));
         
         this.getAddTaskAndDocButton().setActionCommand(TasktrackerActionCommands.ADD_TASK_AND_DOC);
@@ -75,6 +78,9 @@ public class TaskPanel extends javax.swing.JPanel {
         this.getReferencenumberTextfield().setText(null);
         this.getSubjectTextfield().setText(null);
         this.getTaskTextArea().setText(null);
+        
+        final ComboBoxModel<String> model = this.getAuthorCombobox().getModel();
+        new SetSelectedAppointment().accept(model, app.getUserAppointment(app.getApexAppointment()));
         
         this.getResponsiblityCombobox().setSelectedIndex(0);
         
@@ -127,6 +133,8 @@ public class TaskPanel extends javax.swing.JPanel {
         taskTextArea = new javax.swing.JTextArea();
         datesignedDatePanel = new com.bc.appbase.ui.DatePanel();
         timeopenedDatePanel = new com.bc.appbase.ui.DatePanel();
+        authorLabel = new javax.swing.JLabel();
+        authorCombobox = new javax.swing.JComboBox<>();
 
         referencenumberLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         referencenumberLabel.setText("Ref Number ");
@@ -142,7 +150,7 @@ public class TaskPanel extends javax.swing.JPanel {
         taskLabel.setText("<html><span style=\"color:red\">Task *</span></html>");
 
         responsibilityLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        responsibilityLabel.setText("<html><span style=\"color:red\">Who *</span></html>");
+        responsibilityLabel.setText("<html><span style=\"color:red\">   To *</span></html>");
 
         responsiblityCombobox.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         responsiblityCombobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -180,6 +188,12 @@ public class TaskPanel extends javax.swing.JPanel {
         taskTextArea.setFont(new java.awt.Font("Monospaced", 0, 18)); // NOI18N
         taskTextArea.setRows(5);
         taskTextAreaScrollPane.setViewportView(taskTextArea);
+
+        authorLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        authorLabel.setText("<html><span style=\"color:red\">From *</span></html>");
+
+        authorCombobox.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        authorCombobox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -228,7 +242,11 @@ public class TaskPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(168, 168, 168)
                                 .addComponent(taskdetailsLabel)))
-                        .addGap(0, 67, Short.MAX_VALUE)))
+                        .addGap(0, 67, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(authorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(authorCombobox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -256,17 +274,21 @@ public class TaskPanel extends javax.swing.JPanel {
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(taskdetailsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(authorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(authorCombobox, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(responsibilityLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(responsiblityCombobox, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(7, 7, 7)
                         .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(taskTextAreaScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(responsibilityLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(responsiblityCombobox, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(13, 13, 13)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(timeopendLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(timeopenedDatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -275,7 +297,7 @@ public class TaskPanel extends javax.swing.JPanel {
                     .addComponent(addTaskAndDocButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(addTaskToDocButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cleartaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -283,6 +305,8 @@ public class TaskPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addTaskAndDocButton;
     private javax.swing.JButton addTaskToDocButton;
+    private javax.swing.JComboBox<String> authorCombobox;
+    private javax.swing.JLabel authorLabel;
     private javax.swing.JButton cleartaskButton;
     private com.bc.appbase.ui.DatePanel datesignedDatePanel;
     private javax.swing.JLabel datesignedLabel;
@@ -381,5 +405,13 @@ public class TaskPanel extends javax.swing.JPanel {
 
     public DatePanel getTimeopenedDatePanel() {
         return timeopenedDatePanel;
+    }
+
+    public JComboBox<String> getAuthorCombobox() {
+        return authorCombobox;
+    }
+
+    public JLabel getAuthorLabel() {
+        return authorLabel;
     }
 }

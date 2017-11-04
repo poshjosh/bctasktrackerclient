@@ -6,9 +6,9 @@ To single file
 pendingSlaveUpdates.list
 
 Changed
-reportsOutputDir=${user.home}/doctrackerbasic/output
+reports.output.dir=${user.home}/doctrackerbasic/output
 To
-reportsOutputDir=${user.home}/bctasktracker/output
+reports.output.dir=${user.home}/bctasktracker/output
 
 Changed FileNames.doctrackerbasic to FileNames.bctasktracker
 

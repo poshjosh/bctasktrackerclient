@@ -17,7 +17,6 @@
 package com.bc.tasktracker.client.ui;
 
 import com.bc.appbase.ui.SearchResultsPanel;
-import com.bc.appbase.ui.SearchResultsPanelMouseRightClickListener;
 import com.bc.appbase.ui.UIContextBase;
 import com.bc.ui.table.cell.ColumnWidths;
 import java.awt.Container;
@@ -34,15 +33,15 @@ import javax.swing.JFrame;
 /**
  * @author Chinomso Bassey Ikwuagwu on Feb 10, 2017 4:51:32 PM
  */
-public class DtbUIContextImpl extends UIContextBase implements TasktrackerUIContext {
+public class TasktrackerUIContextImpl extends UIContextBase implements TasktrackerUIContext {
     
-    private transient final Logger logger = Logger.getLogger(DtbUIContextImpl.class.getName());
+    private transient final Logger logger = Logger.getLogger(TasktrackerUIContextImpl.class.getName());
 
     private final TasktrackerApp app;
     
     private final TaskFrame newTaskFrame;
     
-    public DtbUIContextImpl(TasktrackerApp app, ImageIcon icon, JFrame mainFrame, TaskFrame newTaskFrame) {
+    public TasktrackerUIContextImpl(TasktrackerApp app, ImageIcon icon, JFrame mainFrame, TaskFrame newTaskFrame) {
         super(app, icon, mainFrame);
         this.app = Objects.requireNonNull(app);
         this.newTaskFrame = Objects.requireNonNull(newTaskFrame);
@@ -72,15 +71,9 @@ public class DtbUIContextImpl extends UIContextBase implements TasktrackerUICont
         
         if(container instanceof SearchResultsPanel) {
             
-            final SearchResultsPanelMouseRightClickListener listener = 
-                    new SearchResultsPanelMouseRightClickListener(app, (SearchResultsPanel)container);
+            final MouseListener listener = 
+                    new SearchResultsRightClickListener(app, (SearchResultsPanel)container);
             
-            listener.addMenuItem("View Task", TasktrackerActionCommands.DISPLAY_TASKEDITORPANE);
-            listener.addMenuItem("Add Response", TasktrackerActionCommands.DISPLAY_ADD_RESPONSE_UI);
-            listener.addMenuItem("Add Remark", TasktrackerActionCommands.DISPLAY_ADD_REMARK_UI);
-            listener.addMenuItem("Close Task", TasktrackerActionCommands.CLOSE_TASK);
-            listener.addMenuItem("Open Task", TasktrackerActionCommands.OPEN_TASK);
-            listener.addMenuItem("Delete Task", TasktrackerActionCommands.DELETE_TASK);
             return listener;
             
         }else{

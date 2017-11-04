@@ -17,7 +17,6 @@
 package com.bc.tasktracker.client.ui.actions;
 
 import com.bc.appcore.exceptions.TaskExecutionException;
-import com.bc.jpa.dao.BuilderForSelect;
 import com.bc.appcore.parameter.ParameterNotFoundException;
 import com.bc.tasktracker.jpa.entities.master.Appointment;
 import com.bc.tasktracker.jpa.entities.master.Appointment_;
@@ -31,6 +30,7 @@ import java.util.logging.Logger;
 import com.bc.appcore.actions.Action;
 import com.bc.appbase.App;
 import com.bc.appcore.parameter.ParameterException;
+import com.bc.jpa.dao.Select;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Feb 26, 2017 8:53:37 PM
@@ -82,7 +82,7 @@ public class AddAppointment implements Action<App,Appointment> {
             appt.setAppointment(apptStr);
             appt.setParentappointment(parent);
             appt.setUnit(unit);
-            app.getDao(Appointment.class).begin().persistAndClose(appt);
+            app.getActivePersistenceUnitContext().getDao().begin().persistAndClose(appt);
         }
 
         final AppointmentPanel forDisposal = (AppointmentPanel)params.get(AppointmentPanel.class.getName());
@@ -111,8 +111,9 @@ public class AddAppointment implements Action<App,Appointment> {
         } 
     }
     
-    private <T> BuilderForSelect<T> getDao(App app, Class<T> entityType) {
-        final BuilderForSelect<T> dao = app.getJpaContext().getBuilderForSelect(entityType);
+    private <T> Select<T> getDao(App app, Class<T> entityType) {
+        final Select<T> dao = app.getActivePersistenceUnitContext()
+                .getDao().forSelect(entityType).from(entityType);
         return dao;
     }
     

@@ -16,6 +16,7 @@
 
 package com.bc.tasktracker.client.ui.actions;
 
+import com.bc.appbase.ui.actions.ActionCommands;
 import com.bc.appcore.exceptions.TaskExecutionException;
 import com.bc.appcore.parameter.ParameterException;
 import com.bc.tasktracker.jpa.entities.master.Task;
@@ -38,7 +39,9 @@ public class AddTask extends com.bc.tasktracker.actions.AddTask {
         
         final Task task = super.execute(appBase, params);
         
-        app.updateReports(true);
+        app.getAction(ActionCommands.REFRESH_ALL_RESULTS).executeSilently(app);
+        
+        app.updateReports();
 
         app.getUIContext().getTaskFrame().getMessageLabel().setText("Success");
         

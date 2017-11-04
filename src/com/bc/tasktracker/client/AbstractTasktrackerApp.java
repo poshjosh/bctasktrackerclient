@@ -23,7 +23,6 @@ import com.bc.appbase.parameter.SelectedRecordsParametersBuilder;
 import com.bc.appbase.ui.MainFrame;
 import com.bc.appbase.ui.SearchResultsPanel;
 import com.bc.appbase.ui.UIContext;
-import com.bc.appcore.jpa.model.ResultModel;
 import com.bc.appcore.parameter.ParametersBuilder;
 import com.bc.util.Util;
 import com.bc.tasktracker.client.parameter.AddAppointmentParametersBuilder;
@@ -33,7 +32,7 @@ import com.bc.tasktracker.client.parameter.AddUnitParametersBuilder;
 import com.bc.tasktracker.client.parameter.SearchParametersBuilder;
 import com.bc.tasktracker.client.ui.AppointmentPanel;
 import com.bc.tasktracker.client.ui.TasktrackerMainFrame;
-import com.bc.tasktracker.client.ui.DtbUIContextImpl;
+import com.bc.tasktracker.client.ui.TasktrackerUIContextImpl;
 import com.bc.tasktracker.client.ui.SearchPanel;
 import com.bc.tasktracker.client.ui.TaskFrame;
 import com.bc.tasktracker.client.ui.TaskPanel;
@@ -58,12 +57,13 @@ import javax.swing.JFrame;
 import com.bc.appcore.User;
 import com.bc.appcore.util.BlockingQueueThreadPoolExecutor;
 import com.bc.tasktracker.ConfigNames;
-import com.bc.tasktracker.client.jpa.model.TasktrackerResultModel;
+import com.bc.tasktracker.client.jpa.model.TasktrackerClientResultModel;
 import com.bc.tasktracker.client.ui.TasktrackerUIContext;
 import com.bc.tasktracker.jpa.TasktrackerSearchContext;
 import com.bc.tasktracker.jpa.TasktrackerSearchContextImpl;
-import com.bc.tasktracker.jpa.entities.master.Task_;
-import java.util.ArrayList;
+import com.bc.appcore.jpa.model.EntityResultModel;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Feb 7, 2017 11:26:00 PM
@@ -103,24 +103,17 @@ public abstract class AbstractTasktrackerApp extends AbstractApp implements Task
     }
 
     @Override
-    public List<String> getTaskColumnNames() {
-        final List<String> temp = new ArrayList(TasktrackerApp.super.getTaskColumnNames());
-        temp.remove(Task_.taskid.getName());
-        return Collections.unmodifiableList(temp);
-    }
-
-    @Override
     public <T> TasktrackerSearchContext<T> getSearchContext(Class<T> entityType) {
-        final ResultModel resultModel = this.getResultModel(entityType, null);
+        final EntityResultModel resultModel = this.getResultModel(entityType, null);
         return new TasktrackerSearchContextImpl<>(this, Objects.requireNonNull(resultModel));
     }
     
     @Override
     public Appointment getAppointment(User user, Appointment outputIfNone) {
-        final Appointment appt = (Appointment)this.getAction(
+        final Optional optionalAppt = this.getAction(
                 TasktrackerActionCommands.GET_APPOINTMENT_FOR_USER, Level.FINER).executeSilently(
-                        this, Collections.singletonMap(User.class.getName(), user), outputIfNone);
-        return appt;
+                        this, Collections.singletonMap(User.class.getName(), user));
+        return optionalAppt.isPresent() ? (Appointment)optionalAppt.get() : outputIfNone;
     }
 
     @Override
@@ -136,7 +129,7 @@ public abstract class AbstractTasktrackerApp extends AbstractApp implements Task
     @Override
     protected UIContext createUIContext(App app, ImageIcon imageIcon, JFrame mainFrame) {
         final TaskFrame taskFrame = new TaskFrame();
-        return new DtbUIContextImpl(this, imageIcon, mainFrame, taskFrame);
+        return new TasktrackerUIContextImpl(this, imageIcon, mainFrame, taskFrame);
     }
     
     @Override
@@ -150,9 +143,10 @@ public abstract class AbstractTasktrackerApp extends AbstractApp implements Task
     }
     
     @Override
-    public ResultModel<Task> createDefaultResultModel() {
-        return new TasktrackerResultModel(
-                this, Task.class, this.getTaskColumnNames(), 0    
+    public EntityResultModel<Task> createResultModel(
+            Class entityType, String[] columnNames) {
+        return new TasktrackerClientResultModel(
+                this, entityType, Arrays.asList(columnNames)
         );
     }
 
@@ -162,15 +156,15 @@ public abstract class AbstractTasktrackerApp extends AbstractApp implements Task
     }
     
     @Override
-    public void updateReports(List<Appointment> appointmentList, boolean refreshDisplay) {
+    public void updateReports(List<Appointment> appointmentList) {
         
-        final Callable<List<File>> updateOutputTask = this.getUpdateOutputTask(appointmentList, refreshDisplay);
+        final Callable<List<File>> updateOutputTask = this.getUpdateOutputTask(appointmentList);
 
         this.updateOutputService.submit(updateOutputTask);
     }
     
     @Override
-    public Callable<List<File>> getUpdateOutputTask(List<Appointment> appointmentList, boolean refreshDisplay) {
+    public Callable<List<File>> getUpdateOutputTask(List<Appointment> appointmentList) {
         return () -> { return Collections.EMPTY_LIST; };
     }
     

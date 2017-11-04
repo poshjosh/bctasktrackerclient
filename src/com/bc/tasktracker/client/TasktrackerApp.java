@@ -30,10 +30,10 @@ public interface TasktrackerApp extends TasktrackerAppCore, App {
     @Override
     public TasktrackerUIContext getUIContext();
     
-    default void updateReports(boolean refreshDisplay) {
+    default void updateReports() {
         final List<Appointment> branchChiefs = this.getTopAppointments();
-        this.updateReports(branchChiefs, refreshDisplay);
+        this.updateReports(branchChiefs);
     }
     
-    void updateReports(List<Appointment> appointmentList, boolean refreshDisplay);
+    void updateReports(List<Appointment> appointmentList);
 }

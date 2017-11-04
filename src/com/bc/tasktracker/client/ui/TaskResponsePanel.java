@@ -55,7 +55,7 @@ public class TaskResponsePanel extends javax.swing.JPanel {
         
         this.getAuthorCombobox().setModel(new DefaultComboBoxModel<>(values));
         
-        this.getAuthorCombobox().setEnabled(false);
+        this.getAuthorCombobox().setEnabled(app.getApexAppointment().equals(app.getUserAppointment(null)));
         
         this.getAddresponseButton().setActionCommand(TasktrackerActionCommands.ADD_TASKRESPONSE);
         

@@ -16,6 +16,7 @@
 
 package com.bc.tasktracker.client.ui.actions;
 
+import com.bc.appbase.ui.actions.ActionCommands;
 import com.bc.appcore.exceptions.TaskExecutionException;
 import com.bc.appcore.parameter.ParameterException;
 import com.bc.tasktracker.jpa.entities.master.Taskresponse;
@@ -37,7 +38,9 @@ public class AddTaskresponse extends com.bc.tasktracker.actions.AddTaskresponse 
 
         final Taskresponse response = super.execute(app, params);
         
-        ((TasktrackerApp)app).updateReports(true);
+        app.getAction(ActionCommands.REFRESH_ALL_RESULTS).executeSilently(app);
+        
+        ((TasktrackerApp)app).updateReports();
             
         ((TasktrackerApp)app).getUIContext().showSuccessMessage("Success");
         

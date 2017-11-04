@@ -19,6 +19,7 @@ package com.bc.tasktracker.client.ui.actions;
 import com.bc.appcore.exceptions.TaskExecutionException;
 import java.util.Map;
 import com.bc.appbase.App;
+import com.bc.appbase.ui.actions.ActionCommands;
 import com.bc.appbase.ui.actions.DeleteSelectedRecords;
 import com.bc.appbase.ui.actions.ParamNames;
 import com.bc.appcore.parameter.ParameterException;
@@ -42,7 +43,9 @@ public class DeleteTask extends DeleteSelectedRecords {
         
         if(success) {
             
-            ((TasktrackerApp)app).updateReports(true);
+            app.getAction(ActionCommands.REFRESH_ALL_RESULTS).executeSilently(app);
+            
+            ((TasktrackerApp)app).updateReports();
         }
         
         return success;

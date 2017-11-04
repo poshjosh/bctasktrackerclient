@@ -17,9 +17,12 @@
 package com.bc.tasktracker.client.ui.actions;
 
 import com.bc.appbase.App;
+import com.bc.appbase.ui.actions.ActionCommands;
 import com.bc.appcore.actions.Action;
 import com.bc.appcore.exceptions.TaskExecutionException;
 import com.bc.jpa.dao.Dao;
+import com.bc.jpa.paging.PaginatedList;
+import com.bc.jpa.search.SearchResults;
 import com.bc.tasktracker.jpa.entities.master.Task;
 import com.bc.tasktracker.jpa.entities.master.Task_;
 import java.util.Date;
@@ -27,16 +30,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import com.bc.tasktracker.client.TasktrackerApp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Apr 4, 2017 12:42:16 PM
  */
-public class SetTimeclosed implements Action<App,Boolean> {
+public class SetTimeclosed implements Action<App, List> {
     
     public static final String PARAMETER_TIMECLOSED = "timeClosed";
 
     @Override
-    public Boolean execute(App app, Map<String, Object> params) throws TaskExecutionException {
+    public List execute(App app, Map<String, Object> params) throws TaskExecutionException {
         
         final Object oval = params.get(PARAMETER_TIMECLOSED);
         final Date timeClosed;
@@ -48,20 +54,45 @@ public class SetTimeclosed implements Action<App,Boolean> {
         
         final List taskidList = (List)params.get(Task_.taskid.getName()+"List");
         Objects.requireNonNull(taskidList);
-
+        
+        final SearchResults searchResults = (SearchResults)params.get(SearchResults.class.getName());
+        
+        final PaginatedList taskList = searchResults.getPages();
+        Objects.requireNonNull(taskList);
+        
+        final List output = new ArrayList(taskidList.size());
+        
         for(Object taskid : taskidList) {
 
-            final Dao dao = app.getDao(Task.class);
+            try(final Dao dao = app.getActivePersistenceUnitContext().getDao()) {
 
-            final Task managedEntity = dao.find(Task.class, taskid);
+                final Task managed = dao.find(Task.class, taskid);
 
-            managedEntity.setTimeclosed(timeClosed);
+                managed.setTimeclosed(timeClosed);
+                
+                dao.begin();
 
-            dao.begin().mergeAndClose(managedEntity);
+                final Task refreshed = dao.merge(managed);
+                
+                final int pos = taskList.indexOf(managed);
+                if(pos != -1) {
+                    searchResults.load(pos); 
+                }
+                
+                dao.commit();
+                
+                output.add(refreshed);
+            }
         }
 
-        ((TasktrackerApp)app).updateReports(true);
+        if(!output.isEmpty()) {
+            
+            app.getAction(ActionCommands.REFRESH_ALL_RESULTS).executeSilently(app, 
+                    Collections.singletonMap(Set.class.getName(), output));
+            
+            ((TasktrackerApp)app).updateReports();
+        }
 
-        return Boolean.TRUE;
+        return output;
     }
 }

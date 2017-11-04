@@ -73,25 +73,16 @@ public class AddTaskParametersBuilder implements ParametersBuilder<TaskPanel> {
         }
         
         final String subject = newTaskPanel.getSubjectTextfield().getText();
-        if(this.isNullOrEmpty(subject)) {
-            throw new ParameterNotFoundException(Doc_.subject.getName());
-        }else{
-            params.put(Doc_.subject.getName(), subject);
-        }
+        this.addRequiredParam(params, Doc_.subject.getName(), subject);
         
         final String description = newTaskPanel.getTaskTextArea().getText();
-        if(this.isNullOrEmpty(description)) {
-            throw new ParameterNotFoundException(Task_.description.getName());
-        }else{
-            params.put(Task_.description.getName(), description);
-        }
+        this.addRequiredParam(params, Task_.description.getName(), description);
+
+        final Object author = newTaskPanel.getAuthorCombobox().getSelectedItem();
+        this.addRequiredParam(params, Task_.author.getName(), author);
         
         final Object responsibility = newTaskPanel.getResponsiblityCombobox().getSelectedItem();
-        if(this.isNullOrEmpty(responsibility)) {
-            throw new ParameterNotFoundException(Task_.reponsibility.getName());
-        }else{
-            params.put(Task_.reponsibility.getName(), responsibility);
-        }
+        this.addRequiredParam(params, Task_.reponsibility.getName(), responsibility);
         
         final DateFromUIBuilder builder = app.getOrException(DateFromUIBuilder.class);
         
@@ -125,6 +116,15 @@ public class AddTaskParametersBuilder implements ParametersBuilder<TaskPanel> {
         }
         
         return params;
+    }
+    
+    private void addRequiredParam(Map<String, Object> params, String name, Object value) 
+            throws ParameterNotFoundException {
+        if(this.isNullOrEmpty(value)) {
+            throw new ParameterNotFoundException(name);
+        }else{
+            params.put(name, value);
+        }
     }
     
     private boolean isNullOrEmpty(Object obj) {

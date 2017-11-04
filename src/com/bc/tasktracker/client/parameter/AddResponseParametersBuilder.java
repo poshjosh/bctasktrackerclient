@@ -59,11 +59,10 @@ public class AddResponseParametersBuilder implements ParametersBuilder<TaskRespo
         params.put(Task_.taskid.getName(), Integer.parseInt(taskidStr));
         
         final String response = taskResponsePanel.getResponseTextArea().getText();
-        if(this.isNullOrEmpty(response)) {
-            throw new ParameterNotFoundException(Taskresponse_.response.getName());
-        }else{
-            params.put(Taskresponse_.response.getName(), response);
-        }
+        this.addRequiredParam(params, Taskresponse_.response.getName(), response);
+        
+        final String author = (String)taskResponsePanel.getAuthorCombobox().getSelectedItem();
+        this.addRequiredParam(params, Taskresponse_.author.getName(), author);
         
         final Calendar cal = app.getCalendar();
         
@@ -76,6 +75,15 @@ public class AddResponseParametersBuilder implements ParametersBuilder<TaskRespo
         }
                 
         return params;
+    }
+    
+    private void addRequiredParam(Map<String, Object> params, String name, Object value) 
+            throws ParameterNotFoundException {
+        if(this.isNullOrEmpty(value)) {
+            throw new ParameterNotFoundException(name);
+        }else{
+            params.put(name, value);
+        }
     }
     
     private boolean isNullOrEmpty(Object text) {

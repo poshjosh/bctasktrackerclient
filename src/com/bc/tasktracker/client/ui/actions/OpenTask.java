@@ -17,16 +17,16 @@
 package com.bc.tasktracker.client.ui.actions;
 
 import com.bc.appbase.App;
-import com.bc.appbase.ui.actions.ActionCommands;
-import com.bc.appbase.ui.actions.ParamNames;
+import com.bc.appbase.ui.SearchResultsPanel;
 import com.bc.appcore.actions.Action;
+import com.bc.appcore.exceptions.SearchResultsNotFoundException;
 import com.bc.appcore.exceptions.TaskExecutionException;
 import com.bc.appcore.parameter.ParameterException;
+import com.bc.jpa.search.SearchResults;
 import com.bc.tasktracker.jpa.entities.master.Task;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
 import javax.swing.JOptionPane;
 
 /**
@@ -44,23 +44,39 @@ public class OpenTask implements Action<App,Boolean> {
         
         if(selection == JOptionPane.YES_OPTION) {
 
-            final Map stcParams = new HashMap(params);
-            stcParams.put(SetTimeclosed.PARAMETER_TIMECLOSED, null);
+            params = new HashMap(params);
+            params.put(SetTimeclosed.PARAMETER_TIMECLOSED, null);
+            final Optional<SearchResults<Task>> optSr = this.getSearchResults(app, params);
             
-            app.getAction(TasktrackerActionCommands.SET_TIMECLOSED).execute(app, stcParams);
+            if(optSr.isPresent()) {
+                params.put(SearchResults.class.getName(), optSr.get());
+            }
+            
+            app.getAction(TasktrackerActionCommands.SET_TIMECLOSED).execute(app, params);
 
             app.getUIContext().showSuccessMessage("Success");
-
+            
+            return Boolean.TRUE;
+            
+        }else{
+        
+            return Boolean.FALSE;
+        }
+    }
+    
+    public Optional<SearchResults<Task>> getSearchResults(App app, Map params) {
+        final SearchResultsPanel panel = (SearchResultsPanel)params.get(SearchResultsPanel.class.getName());
+        final SearchResults<Task> searchResults;
+        if(panel == null) {
+            searchResults = null;
+        }else{
             try{
-                Map<String, Object> map = new HashMap(params);
-                map.put(ParamNames.ENTITY_TYPE, Task.class);
-                app.getAction(ActionCommands.REFRESH_ALL_RESULTS).execute(app, map);
-            }catch(ParameterException | TaskExecutionException e) {
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Unexpected exception", e);
+                searchResults = app.getUIContext().getLinkedSearchResults(panel);
+            }catch(SearchResultsNotFoundException e) {
+                throw new RuntimeException(e);
             }
         }
-        
-        return Boolean.TRUE;
+        return Optional.ofNullable(searchResults);
     }
 }
 

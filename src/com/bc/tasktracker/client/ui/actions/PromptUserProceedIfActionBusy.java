@@ -16,8 +16,10 @@
 
 package com.bc.tasktracker.client.ui.actions;
 
-import com.bc.appbase.ui.UIContext;
-import com.bc.appcore.actions.MeteredAction;
+import com.bc.appbase.App;
+import com.bc.appcore.actions.Action;
+import com.bc.appcore.actions.ActionQueue;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,35 +35,41 @@ public class PromptUserProceedIfActionBusy {
     
     private final float fontSizeEm = 1.2f;
     
-    private final UIContext uiContext;
+    private final App app;
 
-    public PromptUserProceedIfActionBusy(UIContext uiContext) {
-        this.uiContext = uiContext;
+    public PromptUserProceedIfActionBusy(App app) {
+        this.app = Objects.requireNonNull(app);
     }
     
-    public boolean execute(MeteredAction action, String msgIfBusy) {
+    public boolean execute(Action action, String msgIfBusy) {
         
         String timeName = "seconds";
 
-        long estTimeLeftMillis = action.getEstimatedTimeLeftMillis(-1);
-        long estTimeLeft = estTimeLeftMillis == -1 ? -1 : TimeUnit.MILLISECONDS.toSeconds(estTimeLeftMillis);
-
-        final boolean proceed;
+        final ActionQueue actionQueue = app.getActionQueue();
         
-        if(estTimeLeft < 2) {
-            proceed = true;
+        long estTimeLeftMillis = actionQueue.getEstimatedTimeLeftMillis(action, -1);
+        long estTimeLeft = estTimeLeftMillis == -1 ? -1 : TimeUnit.MILLISECONDS.toSeconds(estTimeLeftMillis);
+        
+        final boolean proceed = !(estTimeLeft == -1 || estTimeLeft >= 2);
+        
+        final boolean output;
+        
+        if(proceed) {
+            
+            output = true;
+            
         }else{    
-
+            
             if(estTimeLeft > 120) {
                 timeName = "minutes";
-                estTimeLeftMillis = action.getEstimatedTimeLeftMillis(-1);
+                estTimeLeftMillis = actionQueue.getEstimatedTimeLeftMillis(action, -1);
                 estTimeLeft = estTimeLeftMillis == -1 ? -1 : TimeUnit.MILLISECONDS.toMinutes(estTimeLeftMillis);
             }
 
             if(logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "Estimated time left: {0} {1}", new Object[]{estTimeLeft, timeName});
             }
-            
+
             final StringBuilder messageHtml = new StringBuilder(200);
 
             messageHtml.append("<html><p style=\"font-size:"+fontSizeEm+"em;\">");
@@ -76,12 +84,12 @@ public class PromptUserProceedIfActionBusy {
 
             final JLabel message = new JLabel(messageHtml.toString());
 
-            final int option = JOptionPane.showConfirmDialog(uiContext.getMainFrame(), 
+            final int option = JOptionPane.showConfirmDialog(app.getUIContext().getMainFrame(), 
                     message, msgIfBusy, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
-            proceed = option == JOptionPane.OK_OPTION;
+            output = option == JOptionPane.OK_OPTION;
         }
 
-        return proceed;
+        return output;
     }
 }

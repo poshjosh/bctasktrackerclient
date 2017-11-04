@@ -17,7 +17,6 @@
 package com.bc.tasktracker.client.ui.actions;
 
 import com.bc.appcore.exceptions.TaskExecutionException;
-import com.bc.jpa.dao.BuilderForSelect;
 import com.bc.appcore.parameter.ParameterNotFoundException;
 import com.bc.tasktracker.jpa.entities.master.Unit;
 import com.bc.tasktracker.jpa.entities.master.Unit_;
@@ -30,6 +29,7 @@ import javax.swing.DefaultComboBoxModel;
 import com.bc.appcore.actions.Action;
 import com.bc.appbase.App;
 import com.bc.tasktracker.client.TasktrackerApp;
+import com.bc.jpa.dao.Select;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Feb 26, 2017 8:53:28 PM
@@ -71,7 +71,7 @@ public class AddUnit implements Action<App,Unit> {
                 unit.setAbbreviation(abbrevStr);
                 unit.setParentunit(parent);
                 unit.setUnit(unitStr);
-                app.getDao(Unit.class).begin().persistAndClose(unit);
+                app.getActivePersistenceUnitContext().getDao().begin().persistAndClose(unit);
             }
             
             app.getAttributes().put(AddUnit.class.getName()+'#'+Unit.class.getName(), unit);
@@ -116,8 +116,9 @@ public class AddUnit implements Action<App,Unit> {
         } 
     }
     
-    private <T> BuilderForSelect<T> getDao(App app, Class<T> entityType) {
-        final BuilderForSelect<T> dao = app.getJpaContext().getBuilderForSelect(entityType);
+    private <T> Select<T> getDao(App app, Class<T> entityType) {
+        final Select<T> dao = app.getActivePersistenceUnitContext()
+                .getDao().forSelect(entityType).from(entityType);
         return dao;
     }
     

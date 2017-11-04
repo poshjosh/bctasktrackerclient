@@ -23,23 +23,26 @@ import java.util.Date;
 import java.util.Map;
 import com.bc.tasktracker.jpa.SelectDaoBuilder;
 import com.bc.appcore.actions.Action;
+import com.bc.appcore.parameter.ParameterExtractor;
 import com.bc.tasktracker.client.TasktrackerApp;
-import com.bc.tasktracker.jpa.entities.master.Task;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.bc.tasktracker.jpa.SearchParameters;
 import com.bc.tasktracker.jpa.TasktrackerSearchContext;
+import java.util.function.Function;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Mar 6, 2017 10:49:16 PM
  */
 public class Search implements Action<TasktrackerApp, SearchResults> {
     
+    private transient static final Logger logger = Logger.getLogger(Search.class.getName());
+    
     @Override
     public SearchResults execute(TasktrackerApp app, Map<String, Object> params) 
             throws TaskExecutionException {
         
-        Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Parameters: {0}", params);
+        logger.log(Level.FINE, "Parameters: {0}", params);
         
         final Class resultType = (Class)params.get(SearchParameters.PARAM_RESULT_TYPE);
         final String query = (String)params.get(SearchParameters.PARAM_QUERY);
@@ -54,10 +57,10 @@ public class Search implements Action<TasktrackerApp, SearchResults> {
         final TasktrackerSearchContext searchContext = app.getSearchContext(resultType);
                     
         final SelectDaoBuilder selectionBuilder = searchContext.getSelectDaoBuilder();
-        
+
         final SelectDao selectDao = selectionBuilder
-                .jpaContext(app.getJpaContext())
-                .resultType(resultType==null?Task.class:resultType)
+                .persistenceUnitContext(app.getActivePersistenceUnitContext())
+                .resultType(resultType==null?app.getDefaultEntityType():resultType)
                 .textToFind(query==null || query.isEmpty() ? null : query)
                 .deadlineFrom(deadlineFrom)
                 .deadlineTo(deadlineTo)
@@ -68,7 +71,16 @@ public class Search implements Action<TasktrackerApp, SearchResults> {
                 .who(who)
                 .build();
         
-        final SearchResults searchResults = searchContext.getSearchResults(selectDao);
+        final ParameterExtractor pe = app.getOrException(ParameterExtractor.class);
+        
+        final Function queryFormatter = pe.getFirstValue(params, Function.class, null);
+        
+        logger.log(Level.FINE, "QueryFormatter: {0}", queryFormatter);
+        
+        final SearchResults searchResults = 
+                queryFormatter == null ? 
+                searchContext.getSearchResults(selectDao) :
+                searchContext.getSearchResults(selectDao, queryFormatter);
 
         return searchResults;
     }

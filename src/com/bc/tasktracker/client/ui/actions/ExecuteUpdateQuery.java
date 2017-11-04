@@ -19,6 +19,7 @@ package com.bc.tasktracker.client.ui.actions;
 import com.bc.appcore.exceptions.TaskExecutionException;
 import java.util.Map;
 import com.bc.appbase.App;
+import com.bc.appbase.ui.actions.ActionCommands;
 import com.bc.tasktracker.client.TasktrackerApp;
 
 /**
@@ -31,7 +32,9 @@ public class ExecuteUpdateQuery extends com.bc.appbase.ui.actions.ExecuteUpdateQ
 
         final Integer output = super.execute(app, params); 
         
-        ((TasktrackerApp)app).updateReports(true);
+        app.getAction(ActionCommands.REFRESH_ALL_RESULTS).executeSilently(app);
+        
+        ((TasktrackerApp)app).updateReports();
         
         return output;
     }

@@ -65,7 +65,7 @@ public class TasktrackerMainFrame extends com.bc.appbase.ui.MainFrame {
         this.getExecuteSelectMenuItem().setActionCommand(TasktrackerActionCommands.EXECUTE_SELECT_QUERY);
         this.getExecuteUpdateMenuItem().setActionCommand(TasktrackerActionCommands.EXECUTE_UPDATE_QUERY);
         this.getExecuteDeleteMenuItem().setActionCommand(TasktrackerActionCommands.EXECUTE_DELETE_QUERY);
-        this.getSyncMenuItem().setActionCommand(TasktrackerActionCommands.SYNC_DATABASE);
+        this.getSyncMenuItem().setActionCommand(TasktrackerActionCommands.SYNC_DATABASE_WITH_USER_PROMPT);
         
         app.getUIContext().addActionListeners(this, 
                 this.getNewtaskMenuItem(), 

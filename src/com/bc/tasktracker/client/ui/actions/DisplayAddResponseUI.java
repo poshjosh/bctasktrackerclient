@@ -26,8 +26,10 @@ import java.util.Map;
 import com.bc.appcore.actions.Action;
 import com.bc.appbase.App;
 import com.bc.tasktracker.client.TasktrackerApp;
+import com.bc.tasktracker.client.functions.SetSelectedAppointment;
 import com.bc.tasktracker.client.ui.MessageFrame;
 import com.bc.tasktracker.jpa.entities.master.Appointment;
+import javax.swing.ComboBoxModel;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Feb 11, 2017 2:41:04 PM
@@ -38,7 +40,7 @@ public class DisplayAddResponseUI implements Action<App,Object> {
     public Object execute(final App app, final Map<String, Object> params) throws TaskExecutionException {
         
         final List taskidList = (List)params.get(Task_.taskid.getName() + "List");
-        try(Dao dao = app.getDao(Task.class)) {
+        try(Dao dao = app.getActivePersistenceUnitContext().getDao()) {
             for(Object taskid : taskidList) {
                 final Task task = dao.find(Task.class, taskid);
                 this.execute(((TasktrackerApp)app), task);
@@ -47,7 +49,8 @@ public class DisplayAddResponseUI implements Action<App,Object> {
         return Boolean.TRUE;
     }
 
-    public MessageFrame<TaskResponsePanel> execute(TasktrackerApp app, final Task task) {
+    public MessageFrame<TaskResponsePanel> execute(TasktrackerApp app, final Task task) 
+            throws TaskExecutionException {
         
         final MessageFrame<TaskResponsePanel> frame = app.getUIContext().createTaskResponseFrame();
 
@@ -71,11 +74,26 @@ public class DisplayAddResponseUI implements Action<App,Object> {
         return frame;
     }
     
-    public void beforeDisplay(TasktrackerApp app, final MessageFrame<TaskResponsePanel> frame) {
-        frame.getTitleLabel().setText("Add Response to Task");
-        final Appointment userAppt = app.getUserAppointment(null);
+    public void beforeDisplay(TasktrackerApp app, 
+            final MessageFrame<TaskResponsePanel> frame) 
+            throws TaskExecutionException {
+        frame.getTitleLabel().setText(this.getTitle());
+        final Appointment userAppt = this.getAppointment(app);
         if(userAppt != null) {
-            frame.getMessageComponent().getAuthorCombobox().setSelectedItem(userAppt.getAppointment());
+            final ComboBoxModel<String> model = frame.getMessageComponent().getAuthorCombobox().getModel();
+            new SetSelectedAppointment().accept(model, userAppt);
         }
+    }
+    
+    public String getTitle() {
+        return "Add Response to Task";
+    }
+    
+    public Appointment getAppointment(TasktrackerApp app) throws TaskExecutionException {
+        final Appointment userAppt = app.getUserAppointment(null);
+        if(userAppt == null) {
+            throw new TaskExecutionException("You must be logged-in to perform the requested operation");
+        }
+        return userAppt;
     }
 }

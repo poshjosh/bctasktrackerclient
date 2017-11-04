@@ -18,60 +18,61 @@ package com.bc.tasktracker.client;
 
 import com.bc.appbase.jpa.JpaContextManagerWithUserPrompt;
 import com.bc.appbase.ui.UIContext;
+import com.bc.appcore.functions.ExecuteSqlFromScriptFile;
 import com.bc.appcore.properties.PropertiesContext;
-import com.bc.appcore.sql.script.SqlScriptImporter;
-import com.bc.jpa.JpaContext;
-import com.bc.tasktracker.jpa.entities.master.Task;
-import com.bc.tasktracker.jpa.entities.master.Unit;
-import com.bc.tasktracker.jpa.entities.slave.Unit_;
+import com.bc.jpa.context.PersistenceUnitContext;
+import com.bc.tasktracker.jpa.nodequery.RenameUppercaseSlaveColumnsThenTables;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Enumeration;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Chinomso Bassey Ikwuagwu on Aug 19, 2017 4:53:25 AM
  */
 public class TasktrackerJpaContextManager extends JpaContextManagerWithUserPrompt {
 
+    private static final Logger logger = Logger.getLogger(TasktrackerJpaContextManager.class.getName());
+
     private final ClassLoader classLoader;
     
-    private final Set<String> sqlInsertResources;
-
     public TasktrackerJpaContextManager(
-            ClassLoader classLoader, UIContext uiContext, 
-            PropertiesContext filepaths, Set<String> sqlInsertResources) {
-        this(classLoader, uiContext, filepaths, (persistenceUnit) -> true, sqlInsertResources);
-    }
-
-    public TasktrackerJpaContextManager(
-            ClassLoader classLoader, UIContext uiContext, 
-            PropertiesContext filepaths, Predicate<String> persistenceUnitTest,
-            Set<String> sqlInsertResources) {
-        super(uiContext, filepaths, persistenceUnitTest);
+            ClassLoader classLoader, 
+            UIContext uiContext, 
+            PropertiesContext filepaths, 
+            Predicate<String> persistenceUnitRequiresAuthenticationTest) {
+        super(uiContext, filepaths, persistenceUnitRequiresAuthenticationTest);
         this.classLoader = Objects.requireNonNull(classLoader);
-        this.sqlInsertResources = Objects.requireNonNull(sqlInsertResources);
     }
 
     @Override
-    public void importInitialData(JpaContext jpaContext) throws IOException {
+    public void initDatabaseData(PersistenceUnitContext puContext) throws IOException {
         
-        for(String resource : sqlInsertResources) {
+        logger.entering(this.getClass().getName(), "initDatabaseData(PersistenceUnitContext)", puContext.getName());
         
-            final Enumeration<URL> urls = classLoader.getResources(resource);
+        final String [] suffixes = {"_create_tables.sql", "_insert_into_tables.sql"};
+        
+        final String persistenceUnit = puContext.getPersistenceUnitName();
+        
+        for(String suffix : suffixes) {
+            
+            final URL url = classLoader.getResource(
+                    "META-INF/sql/" + persistenceUnit + suffix);
 
-            new SqlScriptImporter("utf-8", Level.INFO).executeSqlScripts(jpaContext, Task.class, urls);
+            if(url != null) {
+                
+                final List<Integer> output = new ExecuteSqlFromScriptFile<URL>().apply(puContext, url);
+                
+                if(output.isEmpty()) {
+                    throw new RuntimeException("Failed to execute SQL script: " + url);
+                }
+            }
         }
-    }
-
-    @Override
-    public void validateJpaContext(JpaContext jpaContext) {
-        jpaContext.getBuilderForSelect(Unit.class, Long.class)
-                .from(Unit.class)
-                .count(Unit_.unitid.getName())
-                .getSingleResultAndClose();
+        
+        new RenameUppercaseSlaveColumnsThenTables(puContext).apply(
+                com.bc.tasktracker.jpa.entities.master.Appointment.class, 
+                com.bc.tasktracker.jpa.entities.slave.Appointment.class);
     }
 }
